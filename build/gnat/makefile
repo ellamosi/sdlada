@@ -27,7 +27,7 @@ GEN_KB		=	gen/src/sdl-events-keyboards.ads
 
 ifeq (,$(filter $(SDL_PLATFORM), "linux" "windows" "bsd" "android"))
 SDL2_CONFIG	=	-cargs `sdl2-config --cflags` -largs `sdl2-config --libs` -lSDL2_ttf -lSDL2_image
-else ifeq ($(SDL_PLATFORM),macosx)
+else ifeq ($(SDL_PLATFORM),macos)
 SDL2_CONFIG	=
 endif
 
