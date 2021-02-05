@@ -39,8 +39,6 @@ library project SDLAda is
 
          when "macos" =>
             C_Switches   := C_Switches & ("-I/usr/local/include/SDL2");
---              Common_Switches := Common_Switches & ("-F/Library/Frameworks",
---                                                    "-framework", "SDL2_ttf");
 
          when others =>
             null;
