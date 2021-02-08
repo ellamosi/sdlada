@@ -2,13 +2,14 @@ with SDL;
 with SDL.Log;
 with SDL.Audio;
 with SDL.Audio.Devices;
+with SDL.Audio.Frame_Formats;
 with Audio_Support;
 
 procedure Audio is
    Total_Drivers : Positive;
    Total_Devices : Positive;
    Success : Boolean;
-   Requested, Obtained : aliased SDL.Audio.Devices.Spec;
+   Desired, Obtained : aliased Audio_Support.Buffered_Devices.Spec;
    State : aliased Audio_Support.Support_User_Data;
 begin
    SDL.Log.Set (Category => SDL.Log.Application, Priority => SDL.Log.Debug);
@@ -28,33 +29,33 @@ begin
       SDL.Log.Put_Debug ("Device" & i'Img & "   : " & SDL.Audio.Devices.Get_Name (i));
    end loop;
 
-   Requested.Frequency := 48_000;
+   Desired.Frequency := 48_000;
       --  Frequency => 1_048_576,
-   Requested.Format    := (Bit_Size => 16, Float => False, Big_Endian => False, Signed => True);
-   Requested.Channels  := 2;
-   Requested.Silence   := 0;
-   Requested.Samples   := 4096;
-   Requested.Padding   := 0;
-   Requested.Callback  := Audio_Support.Callback'Access;
-   Requested.User_Data := State'Unchecked_Access;
+   Desired.Format    := SDL.Audio.Frame_Formats.Sample_Format_S16SYS;
+   Desired.Channels  := 2;
+   Desired.Silence   := 0;
+   Desired.Samples   := 4096;
+   Desired.Padding   := 0;
+   Desired.Callback  := Audio_Support.Callback'Access;
+   Desired.User_Data := State'Unchecked_Access;
 
-   SDL.Log.Put_Debug ("Requested - Frequency : " & Requested.Frequency'Img);
-   SDL.Log.Put_Debug ("Requested - Format/Bit_Size : " & Requested.Format.Bit_Size'Img);
-   SDL.Log.Put_Debug ("Requested - Format/Float : " & Requested.Format.Float'Img);
-   SDL.Log.Put_Debug ("Requested - Format/Big_Endian : " & Requested.Format.Big_Endian'Img);
-   SDL.Log.Put_Debug ("Requested - Format/Signed : " & Requested.Format.Signed'Img);
-   SDL.Log.Put_Debug ("Requested - Channels : " & Requested.Channels'Img);
-   SDL.Log.Put_Debug ("Requested - Samples : " & Requested.Samples'Img);
-   SDL.Log.Put_Debug ("Requested - Padding : " & Requested.Padding'Img);
+   SDL.Log.Put_Debug ("Desired - Frequency : " & Desired.Frequency'Img);
+   SDL.Log.Put_Debug ("Desired - Format/Bit_Size : " & Desired.Format.Bit_Size'Img);
+   SDL.Log.Put_Debug ("Desired - Format/Float : " & Desired.Format.Float'Img);
+   SDL.Log.Put_Debug ("Desired - Format/Big_Endian : " & Desired.Format.Endianness'Img);
+   SDL.Log.Put_Debug ("Desired - Format/Signed : " & Desired.Format.Signed'Img);
+   SDL.Log.Put_Debug ("Desired - Channels : " & Desired.Channels'Img);
+   SDL.Log.Put_Debug ("Desired - Samples : " & Desired.Samples'Img);
+   SDL.Log.Put_Debug ("Desired - Padding : " & Desired.Padding'Img);
 
-   SDL.Audio.Devices.Open
-     (Desired  => Requested,
+   Audio_Support.Buffered_Devices.Open
+     (Desired  => Desired,
       Obtained => Obtained);
 
    SDL.Log.Put_Debug ("Obtained - Frequency : " & Obtained.Frequency'Img);
    SDL.Log.Put_Debug ("Obtained - Format/Bit_Size : " & Obtained.Format.Bit_Size'Img);
    SDL.Log.Put_Debug ("Obtained - Format/Float : " & Obtained.Format.Float'Img);
-   SDL.Log.Put_Debug ("Obtained - Format/Big_Endian : " & Obtained.Format.Big_Endian'Img);
+   SDL.Log.Put_Debug ("Obtained - Format/Big_Endian : " & Obtained.Format.Endianness'Img);
    SDL.Log.Put_Debug ("Obtained - Format/Signed : " & Obtained.Format.Signed'Img);
    SDL.Log.Put_Debug ("Obtained - Channels : " & Obtained.Channels'Img);
    SDL.Log.Put_Debug ("Obtained - Samples : " & Obtained.Samples'Img);
