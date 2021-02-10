@@ -62,11 +62,17 @@ package body SDL.Audio.Devices is
 --     function To_Address is new Ada.Unchecked_Conversion (Source => User_Data_Access, Target => System.Address);
 
    package body Buffered is
+--        procedure Open
+--          (Name       : in String := "";
+--           Is_Capture : in Boolean := False;
+--           Desired    : aliased in Spec;
+--           Obtained   : aliased out Spec)
+
       procedure Open
         (Name       : in String := "";
          Is_Capture : in Boolean := False;
-         Desired    : aliased in Spec;
-         Obtained   : aliased out Spec)
+         Desired    : aliased in  Desired_Spec;
+         Obtained   : aliased out Obtained_Spec)
       is
          function SDL_Open_Audio_Device
            (C_Name     : in C.Strings.chars_ptr;
@@ -106,48 +112,48 @@ package body SDL.Audio.Devices is
       end Open;
    end Buffered;
 
-   procedure Open
-     (Name       : in String := "";
-      Is_Capture : in Boolean := False;
-      Desired    : aliased in Spec;
-      Obtained   : aliased out Spec)
-   is
-      function SDL_Open_Audio_Device
-        (C_Name     : in C.Strings.chars_ptr;
-         Is_Capture : SDL_Bool;
-         D          : in Spec_Pointer;
-         O          : in Spec_Pointer;
-         Allowed_Changes : C.int)
-         return C.int
-      with
-        Import        => True,
-        Convention    => C,
-        External_Name => "SDL_OpenAudioDevice";
-
-      C_Str  : C.Strings.chars_ptr := C.Strings.Null_Ptr;
-      Result : C.int;
-   begin
-      if Name /= "" then
-         C_Str := C.Strings.New_String (Name);
-
-         Result := SDL_Open_Audio_Device
-           (C_Name     => C_Str,
-            Is_Capture => To_Bool (Is_Capture),
-            D          => Desired'Unrestricted_Access,
-            O          => Obtained'Unchecked_Access,
-            Allowed_Changes => 0);
-
-         C.Strings.Free (C_Str);
-      else
-         Result := SDL_Open_Audio_Device
-           (C_Name => C.Strings.Null_Ptr,
-            Is_Capture => To_Bool (Is_Capture),
-            D          => Desired'Unrestricted_Access,
-            O          => Obtained'Unchecked_Access,
-            Allowed_Changes => 0);
-      end if;
-      Put_Line ("SDL_Open_Audio_Device" & Result'Img);
-   end Open;
+--     procedure Open
+--       (Name       : in String := "";
+--        Is_Capture : in Boolean := False;
+--        Desired    : aliased in Spec;
+--        Obtained   : aliased out Spec)
+--     is
+--        function SDL_Open_Audio_Device
+--          (C_Name     : in C.Strings.chars_ptr;
+--           Is_Capture : SDL_Bool;
+--           D          : in Spec_Pointer;
+--           O          : in Spec_Pointer;
+--           Allowed_Changes : C.int)
+--           return C.int
+--        with
+--          Import        => True,
+--          Convention    => C,
+--          External_Name => "SDL_OpenAudioDevice";
+--
+--        C_Str  : C.Strings.chars_ptr := C.Strings.Null_Ptr;
+--        Result : C.int;
+--     begin
+--        if Name /= "" then
+--           C_Str := C.Strings.New_String (Name);
+--
+--           Result := SDL_Open_Audio_Device
+--             (C_Name     => C_Str,
+--              Is_Capture => To_Bool (Is_Capture),
+--              D          => Desired'Unrestricted_Access,
+--              O          => Obtained'Unchecked_Access,
+--              Allowed_Changes => 0);
+--
+--           C.Strings.Free (C_Str);
+--        else
+--           Result := SDL_Open_Audio_Device
+--             (C_Name => C.Strings.Null_Ptr,
+--              Is_Capture => To_Bool (Is_Capture),
+--              D          => Desired'Unrestricted_Access,
+--              O          => Obtained'Unchecked_Access,
+--              Allowed_Changes => 0);
+--        end if;
+--        Put_Line ("SDL_Open_Audio_Device" & Result'Img);
+--     end Open;
 
    procedure Pause (Device : in Device_Id; Pause : in Boolean) is
       procedure SDL_Pause_Audio_Device (Dev : in Device_Id; P : in SDL_Bool)

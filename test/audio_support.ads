@@ -1,20 +1,17 @@
 with SDL.Audio.Devices;
+with SDL.Audio.Sample_Formats;
 with Interfaces;
 
 package Audio_Support is
 
    type Support_User_Data is new SDL.Audio.Devices.User_Data with private;
 
-   subtype Sample is Interfaces.Integer_16;
+   type Buffer_Type is private;
 
-   type Frames is record
-      L, R : Sample;
-   end record;
+   Sample_Format : constant SDL.Audio.Sample_Formats.Sample_Format :=
+     SDL.Audio.Sample_Formats.Sample_Format_S16SYS;
 
    Buffer_Size : constant := 2 ** 12;
-
-   type Buffer_Type is array (1 .. Buffer_Size) of Frames with
-      Convention => C;
 
    procedure Callback
      (User        : in SDL.Audio.Devices.User_Data_Access;
@@ -22,15 +19,27 @@ package Audio_Support is
       Byte_Length : in Positive)
      with Convention => C;
 
-   package Buffered_Devices is new SDL.Audio.Devices.Buffered (Buffer_T => Buffer_Type);
-
 private
+
+   subtype Sample is Interfaces.Integer_16;
+
+   type Frames is record
+      --  L, R : Sample;
+      L : Sample;
+   end record;
+
+   type Buffer_Type is array (1 .. Buffer_Size) of Frames with
+      Convention => C;
 
    type Pulse_State is (Low, High);
 
+--     Pulse_Frames : constant array (Pulse_State) of Frames :=
+--       (Low  => (Sample'First, Sample'First),
+--        High => (Sample'Last,  Sample'Last));
+
    Pulse_Frames : constant array (Pulse_State) of Frames :=
-     (Low  => (Sample'First, Sample'First),
-      High => (Sample'Last,  Sample'Last));
+     (Low  => (L => Sample'First),
+      High => (L => Sample'Last));
 
    type Support_User_Data is new SDL.Audio.Devices.User_Data with record
       Frame_Count : Natural := 0;

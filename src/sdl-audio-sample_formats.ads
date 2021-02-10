@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------------------------------------------------
 with System; use System;
 
-package SDL.Audio.Frame_Formats is
+package SDL.Audio.Sample_Formats is
 
    type Sample_Bit_Size is mod 2 ** 8 with
      Convention => C;
@@ -45,7 +45,8 @@ package SDL.Audio.Frame_Formats is
       Endianness : Sample_Endianness := Little_Endian;
       Signed     : Boolean;
    end record with
-     Convention => C;
+     Convention => C,
+     Size       => 16;
    for Sample_Format use record
       Bit_Size   at 0 range 0 .. 7;
       Float      at 1 range 0 .. 0;
@@ -158,4 +159,4 @@ package SDL.Audio.Frame_Formats is
       Endianness => System_Endianness,
       Signed     => True);
 
-end SDL.Audio.Frame_Formats;
+end SDL.Audio.Sample_Formats;

@@ -2,14 +2,22 @@ with SDL;
 with SDL.Log;
 with SDL.Audio;
 with SDL.Audio.Devices;
-with SDL.Audio.Frame_Formats;
 with Audio_Support;
 
 procedure Audio is
    Total_Drivers : Positive;
    Total_Devices : Positive;
    Success : Boolean;
-   Desired, Obtained : aliased Audio_Support.Buffered_Devices.Spec;
+
+   package Buffered_Devices is new SDL.Audio.Devices.Buffered
+     (Buffer_T => Audio_Support.Buffer_Type);
+
+   --  Desired : aliased Buffered_Devices.Spec;
+   Desired  : aliased Buffered_Devices.Desired_Spec;
+   Obtained : aliased Buffered_Devices.Obtained_Spec;
+   --  Desired, Obtained : aliased Buffered_Devices.Spec (Mode => Buffered_Devices.Obtained);
+   --  Desired, Obtained : aliased Buffered_Devices.Spec;
+
    State : aliased Audio_Support.Support_User_Data;
 begin
    SDL.Log.Set (Category => SDL.Log.Application, Priority => SDL.Log.Debug);
@@ -30,12 +38,10 @@ begin
    end loop;
 
    Desired.Frequency := 48_000;
-      --  Frequency => 1_048_576,
-   Desired.Format    := SDL.Audio.Frame_Formats.Sample_Format_S16SYS;
-   Desired.Channels  := 2;
-   Desired.Silence   := 0;
-   Desired.Samples   := 4096;
-   Desired.Padding   := 0;
+   --  Desired.Frequency := 1_048_576;
+   Desired.Format    := Audio_Support.Sample_Format;
+   Desired.Channels  := 1;
+   Desired.Samples   := Audio_Support.Buffer_Size;
    Desired.Callback  := Audio_Support.Callback'Access;
    Desired.User_Data := State'Unchecked_Access;
 
@@ -46,9 +52,8 @@ begin
    SDL.Log.Put_Debug ("Desired - Format/Signed : " & Desired.Format.Signed'Img);
    SDL.Log.Put_Debug ("Desired - Channels : " & Desired.Channels'Img);
    SDL.Log.Put_Debug ("Desired - Samples : " & Desired.Samples'Img);
-   SDL.Log.Put_Debug ("Desired - Padding : " & Desired.Padding'Img);
 
-   Audio_Support.Buffered_Devices.Open
+   Buffered_Devices.Open
      (Desired  => Desired,
       Obtained => Obtained);
 
@@ -59,7 +64,6 @@ begin
    SDL.Log.Put_Debug ("Obtained - Format/Signed : " & Obtained.Format.Signed'Img);
    SDL.Log.Put_Debug ("Obtained - Channels : " & Obtained.Channels'Img);
    SDL.Log.Put_Debug ("Obtained - Samples : " & Obtained.Samples'Img);
-   SDL.Log.Put_Debug ("Obtained - Padding : " & Obtained.Padding'Img);
    SDL.Log.Put_Debug ("Obtained - Silence : " & Obtained.Silence'Img);
    SDL.Log.Put_Debug ("Obtained - Size : " & Obtained.Size'Img);
 

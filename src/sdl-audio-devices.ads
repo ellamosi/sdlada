@@ -27,7 +27,7 @@
 --  private with SDL.C_Pointers;
 with Ada.Finalization;
 with System;
-with SDL.Audio.Frame_Formats;
+with SDL.Audio.Sample_Formats;
 
 package SDL.Audio.Devices is
 
@@ -54,20 +54,33 @@ package SDL.Audio.Devices is
       Stream      : in out System.Address; -- BAD
       Byte_Length : in Positive);
 
+--     type Spec is record
+--        Frequency : Integer;
+--        Format    : SDL.Audio.Sample_Formats.Sample_Format;
+--        Channels  : Interfaces.Unsigned_8;
+--        Silence   : Interfaces.Unsigned_8;
+--        Samples   : Interfaces.Unsigned_16;
+--        Padding   : Interfaces.Unsigned_16;
+--        Size      : Interfaces.Unsigned_32;
+--        Callback  : Audio_Callback;
+--        User_Data : User_Data_Access;
+--     end record with
+--       Convention => C;
 
-
-   type Spec is record
-      Frequency : Integer;
-      Format    : SDL.Audio.Frame_Formats.Sample_Format;
-      Channels  : Interfaces.Unsigned_8;
-      Silence   : Interfaces.Unsigned_8;
-      Samples   : Interfaces.Unsigned_16;
-      Padding   : Interfaces.Unsigned_16;
-      Size      : Interfaces.Unsigned_32;
-      Callback  : Audio_Callback;
-      User_Data : User_Data_Access;
-   end record with
-     Convention => C;
+   --
+   --  The calculated values in this structure are calculated by SDL_OpenAudio().
+   --
+   --  For multi-channel audio, the default SDL channel mapping is:
+   --  2:  FL FR                       (stereo)
+   --  3:  FL FR LFE                   (2.1 surround)
+   --  4:  FL FR BL BR                 (quad)
+   --  5:  FL FR FC BL BR              (quad + center)
+   --  6:  FL FR FC LFE SL SR          (5.1 surround - last two can also be BL BR)
+   --  7:  FL FR FC LFE BC SL SR       (6.1 surround)
+   --  8:  FL FR FC LFE BL BR SL SR    (7.1 surround)
+   --
+   subtype Channel_Counts is Interfaces.Unsigned_8 with
+     Static_Predicate => Channel_Counts in 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
    generic
       type Buffer_T is private;
@@ -79,27 +92,84 @@ package SDL.Audio.Devices is
          Byte_Length : in Positive)
         with Convention => C;
 
-      type Spec is record
+      type Spec_Mode is (Desired, Obtained);
+
+--        type Spec is record
+--           Frequency : C.int;
+--           Format    : SDL.Audio.Sample_Formats.Sample_Format;
+--           Channels  : Interfaces.Unsigned_8;
+--           Silence   : Interfaces.Unsigned_8;
+--           Samples   : Interfaces.Unsigned_16;
+--           --  Padding   : Interfaces.Unsigned_16;
+--           Size      : Interfaces.Unsigned_32;
+--           Callback  : Audio_Callback;
+--           User_Data : User_Data_Access;
+--        end record with
+--          Convention => C;
+
+      --  pragma Warnings (Off, "*bits of*unused");
+      type Spec (Mode : Spec_Mode := Desired) is record
          Frequency : C.int;
-         Format    : SDL.Audio.Frame_Formats.Sample_Format;
-         Channels  : Interfaces.Unsigned_8;
-         Silence   : Interfaces.Unsigned_8;
+         Format    : SDL.Audio.Sample_Formats.Sample_Format;
+         Channels  : Channel_Counts;
          Samples   : Interfaces.Unsigned_16;
-         Padding   : Interfaces.Unsigned_16;
-         Size      : Interfaces.Unsigned_32;
          Callback  : Audio_Callback;
          User_Data : User_Data_Access;
+         case Mode is
+            when Desired =>
+               null;
+            when Obtained =>
+               Silence : Interfaces.Unsigned_8;
+               Size    : Interfaces.Unsigned_32;
+         end case;
       end record with
+        Unchecked_Union,
         Convention => C;
+      --  pragma Warnings (On, "*bits of*unused");
+
+      for Spec use record
+         Frequency at 0  range 0 .. C.int'Size - 1;
+         Format    at C.int'Size / System.Storage_Unit + 0  range 0 .. 15;
+         Channels  at C.int'Size / System.Storage_Unit + 2  range 0 .. 7;
+         Silence   at C.int'Size / System.Storage_Unit + 3  range 0 .. 7;
+
+         Samples   at C.int'Size / System.Storage_Unit + 4  range 0 .. 15;
+         --  16 bit padding
+         Size      at C.int'Size / System.Storage_Unit + 8  range 0 .. 31;
+
+         Callback  at C.int'Size / System.Storage_Unit + 12 range 0 .. Standard'Address_Size - 1;
+
+         User_Data
+           at (C.int'Size + Standard'Address_Size) / System.Storage_Unit + 12
+           range 0 .. Standard'Address_Size - 1;
+      end record;
+
+      pragma Warnings (Off, "*bits of*unused");
+      --  This needs to be explicit due to a GNAT bug. It apparently may
+      --  calculate the size of the type based on the position+size of the last
+      --  variant record field, even if that is positioned before other fields
+      --  as specified by the representation clouses.
+      --  for Spec'Size use 256;
+      for Spec'Size use (C.int'Size + 2 * Standard'Address_Size) + 12 * System.Storage_Unit;
+      pragma Warnings (On, "*bits of*unused");
 
       type Spec_Pointer is access all Spec with
         Convention => C;
 
+      subtype Desired_Spec  is Spec (Mode => Desired);
+      subtype Obtained_Spec is Spec (Mode => Obtained);
+
+--        procedure Open
+--          (Name       : in String := "";
+--           Is_Capture : in Boolean := False;
+--           Desired    : aliased in Spec;
+--           Obtained   : aliased out Spec);
+
       procedure Open
         (Name       : in String := "";
          Is_Capture : in Boolean := False;
-         Desired    : aliased in Spec;
-         Obtained   : aliased out Spec);
+         Desired    : aliased in  Desired_Spec;
+         Obtained   : aliased out Obtained_Spec);
 
    end Buffered;
 
@@ -109,11 +179,11 @@ package SDL.Audio.Devices is
 
    function Get_Name (Index : in Positive; Is_Capture : in Boolean := False) return String;
 
-   procedure Open
-     (Name       : in String := "";
-      Is_Capture : in Boolean := False;
-      Desired    : aliased in Spec;
-      Obtained   : aliased out Spec);
+--     procedure Open
+--       (Name       : in String := "";
+--        Is_Capture : in Boolean := False;
+--        Desired    : aliased in Spec;
+--        Obtained   : aliased out Spec);
 
    type Device_Id is mod 2 ** 32 with
      Convention => C;
@@ -130,7 +200,7 @@ private
 --           Owns     : Boolean                        := True;  --  Does this Window type own the Internal data?
 --        end record;
 
-   type Spec_Pointer is access all Spec with
-     Convention => C;
+--     type Spec_Pointer is access all Spec with
+--       Convention => C;
 
 end SDL.Audio.Devices;
