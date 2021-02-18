@@ -213,7 +213,7 @@ SDL_GameControllerUpdate              |   y   |
 SDL_GetAssertionHandler               |   n   |
 SDL_GetAssertionReport                |   n   |
 SDL_GetAudioDeviceName                |   y   |
-SDL_GetAudioDeviceStatus              |   n   |
+SDL_GetAudioDeviceStatus              |   y   |
 SDL_GetAudioDriver                    |   y   |
 SDL_GetAudioStatus                    |   n   |
 SDL_GetBasePath                       |   y   |

@@ -22,12 +22,9 @@
 --------------------------------------------------------------------------------------------------------------------
 with Interfaces.C.Strings;
 with SDL.Error;
-with Ada.Text_IO; use Ada.Text_IO;
 
 package body SDL.Audio.Devices is
    package C renames Interfaces.C;
-
-   --  use type SDL.C_Pointers.Audio_Spec_Pointer;
 
    function Total_Devices (Is_Capture : in Boolean := False) return Positive is
       function SDL_Get_Num_Audio_Devices (Is_Capture : in SDL_Bool) return C.int with
@@ -37,7 +34,6 @@ package body SDL.Audio.Devices is
 
       Num : constant C.int := SDL_Get_Num_Audio_Devices (To_Bool (Is_Capture));
    begin
-      Put_Line ("SDL_Get_Num_Audio_Devices: " & Num'Img);
       if Num < 0 then
          raise Audio_Device_Error with SDL.Error.Get;
       end if;
@@ -59,12 +55,12 @@ package body SDL.Audio.Devices is
    end Get_Name;
 
    package body Buffered is
-      procedure Open
+      function Open
         (Name       : in String := "";
          Is_Capture : in Boolean := False;
          Desired    : aliased in Audio_Spec;
          Obtained   : aliased out Audio_Spec)
-
+        return Device_Id
       is
          function SDL_Open_Audio_Device
            (C_Name     : in C.Strings.chars_ptr;
@@ -100,7 +96,7 @@ package body SDL.Audio.Devices is
                O               => Obtained'Unchecked_Access,
                Allowed_Changes => 0);
          end if;
-         Put_Line ("SDL_Open_Audio_Device" & Result'Img);
+         return Device_Id (Result);
       end Open;
    end Buffered;
 

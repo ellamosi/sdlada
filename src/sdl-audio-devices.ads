@@ -26,12 +26,14 @@
 --------------------------------------------------------------------------------------------------------------------
 --  private with SDL.C_Pointers;
 with Ada.Finalization;
-with System;
 with SDL.Audio.Sample_Formats;
 
 package SDL.Audio.Devices is
 
    Audio_Device_Error : exception;
+
+   type Device_Id is mod 2 ** 32 with
+     Convention => C;
 
    type Allowed_Changes is mod 2 ** 32 with
      Convention => C,
@@ -49,10 +51,7 @@ package SDL.Audio.Devices is
    type User_Data_Access is access all User_Data'Class;
    pragma No_Strict_Aliasing (User_Data_Access);
 
-   type Audio_Callback is access procedure
-     (User        : in User_Data_Access;
-      Stream      : in out System.Address; -- BAD
-      Byte_Length : in Positive);
+   type Audio_Status is (Stopped, Playing, Paused) with Convention => C;
 
    --
    --  The calculated values in this structure are calculated by SDL_OpenAudio().
@@ -95,11 +94,12 @@ package SDL.Audio.Devices is
       type Audio_Spec_Pointer is access all Audio_Spec with
         Convention => C;
 
-      procedure Open
+      function Open
         (Name       : in String := "";
          Is_Capture : in Boolean := False;
          Desired    : aliased in Audio_Spec;
-         Obtained   : aliased out Audio_Spec);
+         Obtained   : aliased out Audio_Spec)
+         return Device_Id;
 
    end Buffered;
 
@@ -107,8 +107,10 @@ package SDL.Audio.Devices is
 
    function Get_Name (Index : in Positive; Is_Capture : in Boolean := False) return String;
 
-   type Device_Id is mod 2 ** 32 with
-     Convention => C;
+   function Get_Status (Device : in Device_Id) return Audio_Status with
+     Import        => True,
+     Convention    => C,
+     External_Name => "SDL_GetAudioDeviceStatus";
 
    procedure Pause (Device : in Device_Id; Pause : in Boolean);
 

@@ -15,6 +15,7 @@ procedure Audio is
    Desired, Obtained : aliased Buffered_Devices.Audio_Spec;
 
    State : aliased Audio_Support.Support_User_Data;
+   Device : SDL.Audio.Devices.Device_Id;
 begin
    SDL.Log.Set (Category => SDL.Log.Application, Priority => SDL.Log.Debug);
 
@@ -34,7 +35,6 @@ begin
    end loop;
 
    Desired.Frequency := 48_000;
-   --  Desired.Frequency := 1_048_576;
    Desired.Format    := Audio_Support.Sample_Format;
    Desired.Channels  := 2;
    Desired.Samples   := Audio_Support.Buffer_Size;
@@ -49,9 +49,13 @@ begin
    SDL.Log.Put_Debug ("Desired - Channels : " & Desired.Channels'Img);
    SDL.Log.Put_Debug ("Desired - Samples : " & Desired.Samples'Img);
 
-   Buffered_Devices.Open
-     (Desired  => Desired,
-      Obtained => Obtained);
+   Device :=
+     Buffered_Devices.Open
+       (Desired  => Desired,
+        Obtained => Obtained);
+
+   SDL.Log.Put_Debug ("Opened Device: " & Device'Img);
+   SDL.Log.Put_Debug ("Device Status: " & SDL.Audio.Devices.Get_Status (Device)'Img);
 
    SDL.Log.Put_Debug ("Obtained - Frequency : " & Obtained.Frequency'Img);
    SDL.Log.Put_Debug ("Obtained - Format/Bit_Size : " & Obtained.Format.Bit_Size'Img);
@@ -63,7 +67,9 @@ begin
    SDL.Log.Put_Debug ("Obtained - Silence : " & Obtained.Silence'Img);
    SDL.Log.Put_Debug ("Obtained - Size : " & Obtained.Size'Img);
 
-   SDL.Audio.Devices.Pause (2, False);
+   SDL.Audio.Devices.Pause (Device, False);
+
+   SDL.Log.Put_Debug ("Device Status: " & SDL.Audio.Devices.Get_Status (Device)'Img);
 
    delay 2.0;
 
