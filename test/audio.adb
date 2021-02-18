@@ -3,6 +3,7 @@ with SDL.Log;
 with SDL.Audio;
 with SDL.Audio.Devices;
 with Audio_Support;
+with System;
 
 procedure Audio is
    Total_Drivers : Positive;
@@ -15,7 +16,9 @@ procedure Audio is
    Desired, Obtained : aliased Buffered_Devices.Audio_Spec;
 
    State : aliased Audio_Support.Support_User_Data;
-   Device : SDL.Audio.Devices.Device_Id;
+   Device : SDL.Audio.Devices.ID;
+
+   Buffer : aliased Audio_Support.Buffer_Type;
 begin
    SDL.Log.Set (Category => SDL.Log.Application, Priority => SDL.Log.Debug);
 
@@ -49,11 +52,12 @@ begin
    SDL.Log.Put_Debug ("Desired - Channels : " & Desired.Channels'Img);
    SDL.Log.Put_Debug ("Desired - Samples : " & Desired.Samples'Img);
 
+   SDL.Log.Put_Debug ("Opening Device : " & SDL.Audio.Devices.Get_Name (1));
    Device :=
      Buffered_Devices.Open
-       (Desired  => Desired,
+       (Name     => SDL.Audio.Devices.Get_Name (1),
+        Desired  => Desired,
         Obtained => Obtained);
-
    SDL.Log.Put_Debug ("Opened Device: " & Device'Img);
    SDL.Log.Put_Debug ("Device Status: " & SDL.Audio.Devices.Get_Status (Device)'Img);
 
@@ -67,9 +71,39 @@ begin
    SDL.Log.Put_Debug ("Obtained - Silence : " & Obtained.Silence'Img);
    SDL.Log.Put_Debug ("Obtained - Size : " & Obtained.Size'Img);
 
+   SDL.Log.Put_Debug ("Unpausing Device: " & SDL.Audio.Devices.Get_Status (Device)'Img);
    SDL.Audio.Devices.Pause (Device, False);
-
    SDL.Log.Put_Debug ("Device Status: " & SDL.Audio.Devices.Get_Status (Device)'Img);
+
+   delay 2.0;
+
+   SDL.Log.Put_Debug ("Closing Device : " & SDL.Audio.Devices.Get_Name (1));
+   SDL.Audio.Devices.Close (Device);
+   SDL.Log.Put_Debug ("Device Status: " & SDL.Audio.Devices.Get_Status (Device)'Img);
+
+   delay 1.0;
+
+   --  Now attempt using an adio queue
+   Desired.Callback := null;
+
+   Device :=
+     Buffered_Devices.Open
+       (Name     => SDL.Audio.Devices.Get_Name (1),
+        Desired  => Desired,
+        Obtained => Obtained);
+
+   SDL.Log.Put_Debug ("Unpausing Device: " & SDL.Audio.Devices.Get_Status (Device)'Img);
+   SDL.Audio.Devices.Pause (Device, False);
+   SDL.Log.Put_Debug ("Device Status: " & SDL.Audio.Devices.Get_Status (Device)'Img);
+
+   delay 2.0;
+
+   for i in 1 .. 20 loop
+      Audio_Support.Callback (State'Unchecked_Access, Buffer, Buffer'Size / System.Storage_Unit);
+      Buffered_Devices.Queue
+        (Device => Device,
+         Data   => Buffer);
+   end loop;
 
    delay 2.0;
 

@@ -117,8 +117,8 @@ SDL_CaptureMouse                      |   y   |
 SDL_ClearError                        |   y   |
 SDL_ClearHints                        |   y   |
 SDL_ClearQueuedAudio                  |   n   |
-SDL_CloseAudio                        |   n   |
-SDL_CloseAudioDevice                  |   n   |
+SDL_CloseAudio                        |   y   |
+SDL_CloseAudioDevice                  |   y   |
 SDL_CompilerBarrier                   |   n   |
 SDL_CondBroadcast                     |   n   |
 SDL_CondSignal                        |   n   |
@@ -422,10 +422,10 @@ SDL_MostSignificantBitIndex32         |   n   |
 SDL_MouseIsHaptic                     |   n   |
 SDL_NumHaptics                        |   n   |
 SDL_NumJoysticks                      |   y   |
-SDL_OpenAudio                         |   n   |
-SDL_OpenAudioDevice                   |   n   |
-SDL_PauseAudio                        |   n   |
-SDL_PauseAudioDevice                  |   n   |
+SDL_OpenAudio                         |   y   |
+SDL_OpenAudioDevice                   |   y   |
+SDL_PauseAudio                        |   y   |
+SDL_PauseAudioDevice                  |   y   |
 SDL_PeepEvents                        |   n   |
 SDL_PixelFormatEnumToMasks            |   y   |
 SDL_PointInRect                       |   n   |

@@ -24,7 +24,6 @@
 --
 --  Operating system audio device access and control.
 --------------------------------------------------------------------------------------------------------------------
---  private with SDL.C_Pointers;
 with Ada.Finalization;
 with SDL.Audio.Sample_Formats;
 
@@ -32,8 +31,10 @@ package SDL.Audio.Devices is
 
    Audio_Device_Error : exception;
 
-   type Device_Id is mod 2 ** 32 with
+   type ID is mod 2 ** 32 with
      Convention => C;
+
+   type Audio_Status is (Stopped, Playing, Paused) with Convention => C;
 
    type Allowed_Changes is mod 2 ** 32 with
      Convention => C,
@@ -50,8 +51,6 @@ package SDL.Audio.Devices is
 
    type User_Data_Access is access all User_Data'Class;
    pragma No_Strict_Aliasing (User_Data_Access);
-
-   type Audio_Status is (Stopped, Playing, Paused) with Convention => C;
 
    --
    --  The calculated values in this structure are calculated by SDL_OpenAudio().
@@ -81,7 +80,7 @@ package SDL.Audio.Devices is
       type Audio_Spec is record
          Frequency : C.int;
          Format    : SDL.Audio.Sample_Formats.Sample_Format;
-         Channels  : Interfaces.Unsigned_8;
+         Channels  : Channel_Counts;
          Silence   : Interfaces.Unsigned_8;
          Samples   : Interfaces.Unsigned_16;
          Padding   : Interfaces.Unsigned_16;
@@ -95,24 +94,42 @@ package SDL.Audio.Devices is
         Convention => C;
 
       function Open
-        (Name       : in String := "";
+        (Desired  : aliased in Audio_Spec;
+         Obtained : aliased out Audio_Spec)
+         return ID;
+
+      function Open
+        (Name       : in String;
          Is_Capture : in Boolean := False;
          Desired    : aliased in Audio_Spec;
          Obtained   : aliased out Audio_Spec)
-         return Device_Id;
+         return ID;
+
+      procedure Queue
+        (Device : in ID;
+         Data   : aliased in Buffer_T);
 
    end Buffered;
 
    function Total_Devices (Is_Capture : in Boolean := False) return Positive;
 
-   function Get_Name (Index : in Positive; Is_Capture : in Boolean := False) return String;
+   function Get_Name
+     (Index : in Positive;
+      Is_Capture : in Boolean := False)
+      return String;
 
-   function Get_Status (Device : in Device_Id) return Audio_Status with
+   function Get_Status (Device : in ID) return Audio_Status with
      Import        => True,
      Convention    => C,
      External_Name => "SDL_GetAudioDeviceStatus";
 
-   procedure Pause (Device : in Device_Id; Pause : in Boolean);
+   procedure Pause (Pause : in Boolean);
+
+   procedure Pause (Device : in ID; Pause : in Boolean);
+
+   procedure Close;
+
+   procedure Close (Device : in ID);
 
 private
 

@@ -22,6 +22,7 @@
 --------------------------------------------------------------------------------------------------------------------
 with Interfaces.C.Strings;
 with SDL.Error;
+with System;
 
 package body SDL.Audio.Devices is
    package C renames Interfaces.C;
@@ -56,11 +57,34 @@ package body SDL.Audio.Devices is
 
    package body Buffered is
       function Open
-        (Name       : in String := "";
+        (Desired  : aliased in Audio_Spec;
+         Obtained : aliased out Audio_Spec)
+         return ID
+      is
+         function SDL_Open_Audio
+           (D : in Audio_Spec_Pointer;
+            O : in Audio_Spec_Pointer)
+         return C.int
+           with
+             Import        => True,
+             Convention    => C,
+             External_Name => "SDL_OpenAudio";
+
+         Result : C.int;
+      begin
+         Result :=
+           SDL_Open_Audio
+             (D => Desired'Unrestricted_Access,
+              O => Obtained'Unchecked_Access);
+         return ID (Result);
+      end Open;
+
+      function Open
+        (Name       : in String;
          Is_Capture : in Boolean := False;
          Desired    : aliased in Audio_Spec;
          Obtained   : aliased out Audio_Spec)
-        return Device_Id
+         return ID
       is
          function SDL_Open_Audio_Device
            (C_Name     : in C.Strings.chars_ptr;
@@ -96,12 +120,51 @@ package body SDL.Audio.Devices is
                O               => Obtained'Unchecked_Access,
                Allowed_Changes => 0);
          end if;
-         return Device_Id (Result);
+         return ID (Result);
       end Open;
+
+      procedure Queue
+        (Device : in ID;
+         Data   : aliased in Buffer_T)
+      is
+         use Interfaces;
+
+         function SDL_Queue_Audio
+           (Dev  : in ID;
+            Data : in System.Address;
+            Len  : in Interfaces.Unsigned_32)
+         return C.int
+           with
+             Import        => True,
+             Convention    => C,
+             External_Name => "SDL_QueueAudio";
+
+         Num : C.int;
+      begin
+         Num := SDL_Queue_Audio
+           (Dev  => Device,
+            Data => Data'Address,
+            Len  => Data'Size / System.Storage_Unit);
+
+         if Num < 0 then
+            raise Audio_Device_Error with SDL.Error.Get;
+         end if;
+      end Queue;
+
    end Buffered;
 
-   procedure Pause (Device : in Device_Id; Pause : in Boolean) is
-      procedure SDL_Pause_Audio_Device (Dev : in Device_Id; P : in SDL_Bool)
+   procedure Pause (Pause : in Boolean) is
+      procedure SDL_Pause_Audio (P : in SDL_Bool)
+      with
+        Import        => True,
+        Convention    => C,
+        External_Name => "SDL_PauseAudio";
+   begin
+      SDL_Pause_Audio (To_Bool (Pause));
+   end Pause;
+
+   procedure Pause (Device : in ID; Pause : in Boolean) is
+      procedure SDL_Pause_Audio_Device (Dev : in ID; P : in SDL_Bool)
       with
         Import        => True,
         Convention    => C,
@@ -109,4 +172,25 @@ package body SDL.Audio.Devices is
    begin
       SDL_Pause_Audio_Device (Device, To_Bool (Pause));
    end Pause;
+
+   procedure Close is
+      procedure SDL_Close_Audio
+      with
+        Import        => True,
+        Convention    => C,
+        External_Name => "SDL_CloseAudio";
+   begin
+      SDL_Close_Audio;
+   end Close;
+
+   procedure Close (Device : in ID) is
+      procedure SDL_Close_Audio_Device (Dev : in ID)
+      with
+        Import        => True,
+        Convention    => C,
+        External_Name => "SDL_CloseAudioDevice";
+   begin
+      SDL_Close_Audio_Device (Device);
+   end Close;
+
 end SDL.Audio.Devices;
