@@ -12,11 +12,7 @@ procedure Audio is
    package Buffered_Devices is new SDL.Audio.Devices.Buffered
      (Buffer_T => Audio_Support.Buffer_Type);
 
-   --  Desired : aliased Buffered_Devices.Spec;
-   Desired  : aliased Buffered_Devices.Desired_Spec;
-   Obtained : aliased Buffered_Devices.Obtained_Spec;
-   --  Desired, Obtained : aliased Buffered_Devices.Spec (Mode => Buffered_Devices.Obtained);
-   --  Desired, Obtained : aliased Buffered_Devices.Spec;
+   Desired, Obtained : aliased Buffered_Devices.Audio_Spec;
 
    State : aliased Audio_Support.Support_User_Data;
 begin
@@ -40,7 +36,7 @@ begin
    Desired.Frequency := 48_000;
    --  Desired.Frequency := 1_048_576;
    Desired.Format    := Audio_Support.Sample_Format;
-   Desired.Channels  := 1;
+   Desired.Channels  := 2;
    Desired.Samples   := Audio_Support.Buffer_Size;
    Desired.Callback  := Audio_Support.Callback'Access;
    Desired.User_Data := State'Unchecked_Access;

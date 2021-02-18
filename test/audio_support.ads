@@ -24,22 +24,18 @@ private
    subtype Sample is Interfaces.Integer_16;
 
    type Frames is record
-      --  L, R : Sample;
-      L : Sample;
-   end record;
+      L, R : Sample;
+   end record with
+     Convention => C;
 
    type Buffer_Type is array (1 .. Buffer_Size) of Frames with
-      Convention => C;
+     Convention => C;
 
    type Pulse_State is (Low, High);
 
---     Pulse_Frames : constant array (Pulse_State) of Frames :=
---       (Low  => (Sample'First, Sample'First),
---        High => (Sample'Last,  Sample'Last));
-
    Pulse_Frames : constant array (Pulse_State) of Frames :=
-     (Low  => (L => Sample'First),
-      High => (L => Sample'Last));
+     (Low  => (Sample'First, Sample'First),
+      High => (Sample'Last,  Sample'Last));
 
    type Support_User_Data is new SDL.Audio.Devices.User_Data with record
       Frame_Count : Natural := 0;

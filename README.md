@@ -106,7 +106,7 @@ SDL_AtomicSet                         |   n   |
 SDL_AtomicSetPtr                      |   n   |
 SDL_AtomicTryLock                     |   n   |
 SDL_AtomicUnlock                      |   n   |
-SDL_AudioInit                         |   n   |
+SDL_AudioInit                         |   y   |
 SDL_AudioQuit                         |   n   |
 SDL_BlitScaled                        |   y   |
 SDL_BlitSurface                       |   y   |
@@ -212,9 +212,9 @@ SDL_GameControllerOpen                |   y   |
 SDL_GameControllerUpdate              |   y   |
 SDL_GetAssertionHandler               |   n   |
 SDL_GetAssertionReport                |   n   |
-SDL_GetAudioDeviceName                |   n   |
+SDL_GetAudioDeviceName                |   y   |
 SDL_GetAudioDeviceStatus              |   n   |
-SDL_GetAudioDriver                    |   n   |
+SDL_GetAudioDriver                    |   y   |
 SDL_GetAudioStatus                    |   n   |
 SDL_GetBasePath                       |   y   |
 SDL_GetCPUCacheLineSize               |   y   |
@@ -223,7 +223,7 @@ SDL_GetClipRect                       |   y   |
 SDL_GetClipboardText                  |   y   |
 SDL_GetClosestDisplayMode             |   y   |
 SDL_GetColorKey                       |   y   |
-SDL_GetCurrentAudioDriver             |   n   |
+SDL_GetCurrentAudioDriver             |   y   |
 SDL_GetCurrentDisplayMode             |   y   |
 SDL_GetCurrentVideoDriver             |   y   |
 SDL_GetCursor                         |   y   |
@@ -245,8 +245,8 @@ SDL_GetKeyboardState                  |   n   |
 SDL_GetModState                       |   y   |
 SDL_GetMouseFocus                     |   n   |
 SDL_GetMouseState                     |   y   |
-SDL_GetNumAudioDevices                |   n   |
-SDL_GetNumAudioDrivers                |   n   |
+SDL_GetNumAudioDevices                |   y   |
+SDL_GetNumAudioDrivers                |   y   |
 SDL_GetNumDisplayModes                |   y   |
 SDL_GetNumRenderDrivers               |   y   |
 SDL_GetNumTouchDevices                |   n   |
