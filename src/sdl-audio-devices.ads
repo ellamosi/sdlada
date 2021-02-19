@@ -127,6 +127,10 @@ package SDL.Audio.Devices is
 
    procedure Pause (Device : in ID; Pause : in Boolean);
 
+   function Get_Queued_Size (Device : in ID) return Interfaces.Unsigned_32;
+
+   procedure Clear_Queued (Device : in ID);
+
    procedure Close;
 
    procedure Close (Device : in ID);

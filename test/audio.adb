@@ -96,16 +96,13 @@ begin
    SDL.Audio.Devices.Pause (Device, False);
    SDL.Log.Put_Debug ("Device Status: " & SDL.Audio.Devices.Get_Status (Device)'Img);
 
-   delay 2.0;
-
    for i in 1 .. 20 loop
       Audio_Support.Callback (State'Unchecked_Access, Buffer, Buffer'Size / System.Storage_Unit);
       Buffered_Devices.Queue
         (Device => Device,
          Data   => Buffer);
+      delay 0.05;
    end loop;
-
-   delay 2.0;
 
    SDL.Finalise;
 end Audio;

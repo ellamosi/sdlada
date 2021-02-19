@@ -28,10 +28,13 @@ package body SDL.Audio.Devices is
    package C renames Interfaces.C;
 
    function Total_Devices (Is_Capture : in Boolean := False) return Positive is
-      function SDL_Get_Num_Audio_Devices (Is_Capture : in SDL_Bool) return C.int with
-        Import        => True,
-        Convention    => C,
-        External_Name => "SDL_GetNumAudioDevices";
+      function SDL_Get_Num_Audio_Devices
+        (Is_Capture : in SDL_Bool)
+         return C.int
+        with
+          Import        => True,
+          Convention    => C,
+          External_Name => "SDL_GetNumAudioDevices";
 
       Num : constant C.int := SDL_Get_Num_Audio_Devices (To_Bool (Is_Capture));
    begin
@@ -43,10 +46,13 @@ package body SDL.Audio.Devices is
    end Total_Devices;
 
    function Get_Name (Index : in Positive; Is_Capture : in Boolean := False) return String is
-      function SDL_Get_Audio_Device_Name (Index : in C.int; Is_Capture : in SDL_Bool) return C.Strings.chars_ptr with
-        Import        => True,
-        Convention    => C,
-        External_Name => "SDL_GetAudioDeviceName";
+      function SDL_Get_Audio_Device_Name
+        (Index : in C.int; Is_Capture : in SDL_Bool)
+         return C.Strings.chars_ptr
+        with
+          Import        => True,
+          Convention    => C,
+          External_Name => "SDL_GetAudioDeviceName";
 
       --  Index is zero based, so need to subtract 1 to correct it.
       C_Str : constant C.Strings.chars_ptr := SDL_Get_Audio_Device_Name
@@ -172,6 +178,28 @@ package body SDL.Audio.Devices is
    begin
       SDL_Pause_Audio_Device (Device, To_Bool (Pause));
    end Pause;
+
+   function Get_Queued_Size (Device : in ID) return Interfaces.Unsigned_32 is
+      function SDL_Get_Queued_Audio_Size
+        (Dev : in ID)
+         return Interfaces.Unsigned_32
+      with
+        Import        => True,
+        Convention    => C,
+        External_Name => "SDL_GetQueuedAudioSize";
+   begin
+      return SDL_Get_Queued_Audio_Size (Device);
+   end Get_Queued_Size;
+
+   procedure Clear_Queued (Device : in ID) is
+      procedure SDL_Clear_Queued_Audio (Dev : in ID)
+      with
+        Import        => True,
+        Convention    => C,
+        External_Name => "SDL_ClearQueuedAudio";
+   begin
+      SDL_Clear_Queued_Audio (Device);
+   end Clear_Queued;
 
    procedure Close is
       procedure SDL_Close_Audio
