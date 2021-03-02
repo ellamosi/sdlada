@@ -15,4 +15,24 @@ project Tests is
                         "ttf.adb");
 
    package Compiler renames SDLAda.Compiler;
+
+   Platform : SDLAda.Platform_Type := SDLAda.Platform;
+
+   package Linker is
+      Switches := ("-lSDL2", "-lSDL2_ttf", "-lSDL2_image");
+
+      --  These flags require checking on all platforms as they're taken directly from sdl2-config.
+      case Platform is
+         when "linux" | "bsd" | "android" | "windows" =>
+            Switches := Switches & ("-L/usr/lib");
+
+         when "macos" =>
+            Switches := Switches & ("-L/usr/local/lib");
+
+         when others =>
+            null;
+      end case;
+
+      for Default_Switches ("Ada") use Switches;
+   end Linker;
 end Tests;
